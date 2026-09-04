@@ -412,6 +412,9 @@
             utterance.lang = 'en-GB';
             utterance.rate = 0.9;
             utterance.pitch = 1.1;
+            utterance.onerror = () => {
+              setStatus('Audio is blocked by the browser or device settings — use the picture clue instead.', 'error');
+            };
 
             const voices = window.speechSynthesis.getVoices();
             const preferredVoice = voices.find((voice) => /en(-|_)?(gb|us|au|ie)/i.test(voice.lang)) || voices[0];
@@ -426,6 +429,7 @@
             window.speechSynthesis.speak(utterance);
           } catch (error) {
             console.warn('Speech playback failed:', error);
+            setStatus('Audio is blocked by the browser or device settings — use the picture clue instead.', 'error');
           }
         };
 
@@ -436,7 +440,13 @@
           };
 
           window.speechSynthesis.onvoiceschanged = voiceListener;
-          setTimeout(playSpeech, 250);
+          setTimeout(() => {
+            if (!window.speechSynthesis || !window.speechSynthesis.getVoices || !window.speechSynthesis.getVoices().length) {
+              setStatus('Audio is blocked by the browser or device settings — use the picture clue instead.', 'error');
+            } else {
+              playSpeech();
+            }
+          }, 250);
           return;
         }
 
