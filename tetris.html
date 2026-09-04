@@ -153,6 +153,13 @@
         font-size: 1.2rem;
       }
 
+      .button-label {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+      }
+
       .icon-btn {
         display: inline-flex;
         align-items: center;
@@ -482,7 +489,7 @@
       <h1>Spelling Tetris</h1>
 
       <div class="setup-toolbar">
-        <button id="toggle-list-btn" class="toggle-list-btn icon-btn" type="button" aria-label="Hide spelling list"><span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5c5.5 0 10 7 10 7s-4.5 7-10 7S2 12 2 12s4.5-7 10-7zm0 2.2A4.8 4.8 0 1 0 12 16.8 4.8 4.8 0 0 0 12 7.2zm0 2.1a2.7 2.7 0 1 1 0 5.4 2.7 2.7 0 0 1 0-5.4z"/></svg></span> Hide list</button>
+        <button id="toggle-list-btn" class="toggle-list-btn icon-btn" type="button" aria-label="Hide spelling list"><span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5c5.5 0 10 7 10 7s-4.5 7-10 7S2 12 2 12s4.5-7 10-7zm0 2.2A4.8 4.8 0 1 0 12 16.8 4.8 4.8 0 0 0 12 7.2zm0 2.1a2.7 2.7 0 1 1 0 5.4 2.7 2.7 0 0 1 0-5.4z"/></svg></span><span class="button-label">Hide list</span></button>
       </div>
 
       <section id="setup-panel" class="setup-panel" aria-label="Weekly spelling list setup">
@@ -525,8 +532,8 @@ fudge
             <canvas id="next" width="120" height="120" aria-label="Next piece preview"></canvas>
           </div>
 
-          <button id="start-btn" class="icon-btn" type="button"><span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5.5v13l11-6.5-11-6.5z"/></svg></span> Start</button>
-          <button id="pause-btn" class="icon-btn" type="button"><span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></span> Pause</button>
+          <button id="start-btn" class="icon-btn" type="button"><span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5.5v13l11-6.5-11-6.5z"/></svg></span><span class="button-label">Start</span></button>
+          <button id="pause-btn" class="icon-btn" type="button"><span class="symbol" aria-hidden="true">⏸</span><span class="button-label">Pause</span></button>
 
           <div class="controls">
             <button class="left" data-action="left" type="button">◀</button>
@@ -746,7 +753,7 @@ fudge
             };
 
             utterance.onend = () => {
-              challengeStatus.textContent = 'Listen and say the word.';
+              challengeStatus.textContent = 'Listen and type the word.';
               challengeStatus.style.color = '#cbd5e1';
             };
 
@@ -868,7 +875,7 @@ fudge
         pauseGame();
         wordInput.value = '';
         wordInput.focus();
-        challengeStatus.innerHTML = hasUserInteracted ? 'Listen and say the word.' : 'Tap “Listen again” to hear the word.';
+        challengeStatus.innerHTML = hasUserInteracted ? 'Listen and type the word.' : 'Tap “Listen again” to hear the word.';
         challengeStatus.style.color = '#cbd5e1';
         challengeStatus.style.fontSize = '1.1rem';
         challengeStatus.style.fontWeight = '700';
@@ -1017,10 +1024,28 @@ fudge
         speedValue.textContent = `${Number(state.speedMultiplier).toFixed(1)}x`;
       }
 
+      function renderToggleListButton(isHidden) {
+        const isVisible = !isHidden;
+        const labelEl = toggleListBtn.querySelector('.button-label');
+        if (labelEl) {
+          labelEl.textContent = isVisible ? 'Hide list' : 'Show list';
+        }
+        toggleListBtn.setAttribute('aria-label', isVisible ? 'Hide spelling list' : 'Show spelling list');
+      }
+
+      function renderPauseButton(isPaused) {
+        const label = isPaused ? 'Resume' : 'Pause';
+        const symbol = isPaused ? '▶' : '⏸';
+        const labelEl = pauseBtn.querySelector('.button-label');
+        const symbolEl = pauseBtn.querySelector('.symbol');
+        if (labelEl) labelEl.textContent = label;
+        if (symbolEl) symbolEl.textContent = symbol;
+        pauseBtn.setAttribute('aria-label', label === 'Pause' ? 'Pause game' : 'Resume game');
+      }
+
       function toggleSpellingList() {
         const isHidden = setupPanel.classList.toggle('hidden');
-        toggleListBtn.textContent = isHidden ? 'Show list' : 'Hide list';
-        toggleListBtn.setAttribute('aria-label', isHidden ? 'Show spelling list' : 'Hide spelling list');
+        renderToggleListButton(isHidden);
         if (state.running && !isHidden) {
           statusEl.textContent = 'Game in progress — list hidden while playing.';
         }
@@ -1037,13 +1062,13 @@ fudge
         if (state.running) {
           pauseGame();
           state.running = false;
-          pauseBtn.textContent = 'Resume';
+          renderPauseButton(true);
           statusEl.textContent = 'Game paused.';
           return;
         }
 
         state.running = true;
-        pauseBtn.textContent = 'Pause';
+        renderPauseButton(false);
         statusEl.textContent = 'Game resumed.';
         restartTimer();
       }
@@ -1057,9 +1082,8 @@ fudge
 
         clearChallengeTimers();
         setupPanel.classList.add('hidden');
-        toggleListBtn.textContent = 'Show list';
-        toggleListBtn.setAttribute('aria-label', 'Show spelling list');
-        pauseBtn.textContent = 'Pause';
+        renderToggleListButton(true);
+        renderPauseButton(false);
         state.board = createBoard();
         state.score = 0;
         state.lines = 0;
@@ -1222,7 +1246,8 @@ fudge
         pauseOrResumeGame();
       });
 
-      pauseBtn.innerHTML = '<span class="symbol">⏸</span> Pause';
+      renderPauseButton(false);
+      renderToggleListButton(false);
 
       toggleListBtn.addEventListener('click', () => {
         if (state.running) {
