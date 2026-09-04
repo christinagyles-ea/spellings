@@ -25,6 +25,10 @@
         --shape-7: #76b7b2;
       }
 
+      html {
+        background-color: var(--bg);
+      }
+
       * { box-sizing: border-box; }
 
       body {
@@ -32,6 +36,7 @@
         min-height: 100vh;
         display: grid;
         place-items: center;
+        background-color: var(--bg);
         background: radial-gradient(circle at top, #1e293b, var(--bg) 60%);
         color: var(--text);
         font-family: Arial, Helvetica, sans-serif;

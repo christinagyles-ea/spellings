@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drag the Letters</title>
+    <style>
+      :root {
+        --bg: #101828;
+        --panel: #111827;
+        --panel-alt: #1f2937;
+        --text: #f8fafc;
+        --muted: #dfe7f3;
+        --accent: #2a78c9;
+        --accent-2: #2e9f5f;
+        --warning: #d97706;
+        --danger: #c43d4b;
+      }
+
+      html {
+        background-color: #101828;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background-color: #101828;
+        background: radial-gradient(circle at top, #1e293b, var(--bg) 65%);
+        color: var(--text);
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .game-shell {
+        width: min(98vw, 1100px);
+        background: rgba(15, 23, 42, 0.94);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 20px;
+        box-shadow: 0 25px 60px rgba(15, 23, 42, 0.45);
+        padding: 1.4rem;
+      }
+
+      .top-bar {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 0.75rem;
+      }
+
+      .back-button {
+        appearance: none;
+        border: 2px solid rgba(148, 163, 184, 0.4);
+        background: rgba(148, 163, 184, 0.12);
+        color: var(--text);
+        font-size: 1.05rem;
+        font-weight: 700;
+        padding: 0.7rem 1rem;
+        border-radius: 12px;
+        cursor: pointer;
+      }
+
+      .back-button:hover,
+      .back-button:focus-visible {
+        background: rgba(148, 163, 184, 0.22);
+      }
+
+      #listen-btn,
+      #hint-btn {
+        width: 100%;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #d97706, #b45309);
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 700;
+        padding: 0.9rem 1rem;
+        cursor: pointer;
+      }
+
+      #listen-btn {
+        margin-bottom: 0.75rem;
+      }
+
+      #hint-btn {
+        margin-bottom: 0.85rem;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      }
+
+      #listen-btn:hover,
+      #listen-btn:focus-visible,
+      #hint-btn:hover,
+      #hint-btn:focus-visible {
+        filter: brightness(1.05);
+      }
+
+      h1 {
+        margin: 0 0 0.75rem;
+        text-align: center;
+        font-size: clamp(2.4rem, 5vw, 3.5rem);
+      }
+
+      .hud {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        color: var(--muted);
+        font-size: 1.2rem;
+      }
+
+      .hud strong {
+        color: var(--text);
+      }
+
+      .progress-wrap {
+        margin-bottom: 1rem;
+      }
+
+      .progress-bar {
+        width: 100%;
+        height: 18px;
+        background: rgba(148, 163, 184, 0.18);
+        border-radius: 999px;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+      }
+
+      .progress-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        transition: width 0.25s ease;
+      }
+
+      .play-area {
+        display: grid;
+        grid-template-columns: 1fr 1.25fr;
+        gap: 1.2rem;
+      }
+
+      .panel {
+        background: rgba(17, 24, 39, 0.75);
+        border: 1px solid rgba(148, 163, 184, 0.38);
+        border-radius: 18px;
+        padding: 1rem;
+      }
+
+      .image-frame {
+        display: grid;
+        place-items: center;
+        min-height: 280px;
+        background: linear-gradient(135deg, rgba(42, 120, 201, 0.12), rgba(46, 159, 95, 0.12));
+        border-radius: 14px;
+        border: 2px solid rgba(148, 163, 184, 0.2);
+        overflow: hidden;
+      }
+
+      .image-frame img {
+        display: block;
+        width: 100%;
+        max-width: 340px;
+        max-height: 280px;
+        object-fit: contain;
+        border-radius: 12px;
+      }
+
+      .word-stage {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .word-flash {
+        min-height: 90px;
+        display: grid;
+        place-items: center;
+        white-space: nowrap;
+        font-size: clamp(2.2rem, 4vw, 4rem);
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: lowercase;
+        opacity: 1;
+        transition: opacity 0.9s ease, transform 0.9s ease;
+        color: #f8fafc;
+      }
+
+      .word-flash.fade-out {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+
+      .word-slots {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 84px;
+        flex-wrap: wrap;
+      }
+
+      .slot {
+        width: 64px;
+        height: 64px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        border: 2px dashed rgba(148, 163, 184, 0.5);
+        background: rgba(15, 23, 42, 0.7);
+        color: var(--text);
+        font-size: 2rem;
+        font-weight: 900;
+        text-transform: lowercase;
+        transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      }
+
+      .slot.filled {
+        border-style: solid;
+        border-color: rgba(46, 159, 95, 0.8);
+        background: rgba(46, 159, 95, 0.16);
+      }
+
+      .slot.wrong {
+        border-color: rgba(196, 61, 75, 0.9);
+        background: rgba(196, 61, 75, 0.16);
+        transform: translateX(2px);
+      }
+
+      .letter-bank {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.7rem;
+        min-height: 84px;
+        padding-top: 0.35rem;
+      }
+
+      .letter-tile {
+        width: 58px;
+        height: 58px;
+        border: none;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--accent), #1d4f94);
+        color: #fff;
+        font-size: 2rem;
+        font-weight: 900;
+        cursor: grab;
+        box-shadow: 0 10px 20px rgba(17, 24, 39, 0.25);
+        user-select: none;
+      }
+
+      .letter-tile:active {
+        cursor: grabbing;
+      }
+
+      .letter-tile.hidden {
+        display: none;
+      }
+
+      .status {
+        min-height: 1.8rem;
+        text-align: center;
+        color: var(--muted);
+        font-size: 1.4rem;
+        font-weight: 800;
+      }
+
+      .status.success {
+        color: #4ade80;
+      }
+
+      .status.error {
+        color: #fca5a5;
+      }
+
+      @media (max-width: 720px) {
+        .play-area {
+          grid-template-columns: 1fr;
+        }
+
+        .slot {
+          width: 52px;
+          height: 52px;
+          font-size: 1.7rem;
+        }
+
+        .letter-tile {
+          width: 48px;
+          height: 48px;
+          font-size: 1.7rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="game-shell">
+      <div class="top-bar">
+        <button class="back-button" type="button" onclick="window.location.href='index.html'" aria-label="Go back to the game chooser">← Back</button>
+      </div>
+
+      <h1>Drag the letters</h1>
+
+      <div class="hud">
+        <div>Score: <strong id="score">0</strong></div>
+        <div>Round: <strong id="round">1</strong></div>
+        <div>Time: <strong id="timer">00:00</strong></div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar" aria-label="Game progress">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="play-area">
+        <div class="panel image-frame">
+          <img id="word-image" src="images/badge.jpeg" alt="Word clue" />
+        </div>
+
+        <div class="panel word-stage">
+          <button id="listen-btn" type="button" class="secondary-btn" aria-label="Listen to the word">🔊 Listen</button>
+          <button id="hint-btn" type="button" aria-label="Reveal a quick hint">💡 Hint</button>
+          <div id="word-flash" class="word-flash" aria-live="polite">badge</div>
+          <div id="word-slots" class="word-slots" aria-live="polite"></div>
+          <div id="letter-bank" class="letter-bank" aria-live="polite"></div>
+          <div id="status" class="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const words = [
+        { word: 'badge', image: 'images/badge.jpeg' },
+        { word: 'because', image: 'images/because.jpeg' },
+        { word: 'bridge', image: 'images/bridge.jpeg' },
+        { word: 'dodge', image: 'images/dodge.jpeg' },
+        { word: 'door', image: 'images/door.jpeg' },
+        { word: 'edge', image: 'images/edge.jpeg' },
+        { word: 'floor', image: 'images/floor.jpeg' },
+        { word: 'fudge', image: 'images/fudge.jpeg' },
+        { word: 'poor', image: 'images/poor.jpeg' }
+      ];
+
+      const scoreEl = document.getElementById('score');
+      const roundEl = document.getElementById('round');
+      const timerEl = document.getElementById('timer');
+      const progressFill = document.getElementById('progress-fill');
+      const wordImage = document.getElementById('word-image');
+      const wordFlash = document.getElementById('word-flash');
+      const wordSlots = document.getElementById('word-slots');
+      const letterBank = document.getElementById('letter-bank');
+      const statusEl = document.getElementById('status');
+
+      const listenBtn = document.getElementById('listen-btn');
+      const hintBtn = document.getElementById('hint-btn');
+
+      let gameWords = [];
+      let currentWord = null;
+      let currentIndex = 0;
+      let score = 0;
+      let elapsedSeconds = 0;
+      let timerId = null;
+      let startTimestamp = 0;
+      let draggedLetter = null;
+      let draggedLetterId = null;
+      let placedCount = 0;
+      let hasUserInteracted = false;
+
+      function shuffleArray(array) {
+        const copy = [...array];
+        for (let i = copy.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      function formatTime(totalSeconds) {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      }
+
+      function updateHud() {
+        scoreEl.textContent = String(score);
+        roundEl.textContent = String(Math.min(currentIndex + 1, gameWords.length || 1));
+        timerEl.textContent = formatTime(elapsedSeconds);
+        const progress = gameWords.length ? ((currentIndex + 1) / gameWords.length) * 100 : 0;
+        progressFill.style.width = `${progress}%`;
+      }
+
+      function setStatus(message, type = '') {
+        statusEl.textContent = message;
+        statusEl.classList.remove('success', 'error');
+        if (type) statusEl.classList.add(type);
+      }
+
+      function markUserInteraction() {
+        hasUserInteracted = true;
+      }
+
+      function speakWord(word) {
+        if (!word || !('speechSynthesis' in window) || !hasUserInteracted) return;
+
+        const playSpeech = () => {
+          try {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-GB';
+            utterance.rate = 0.9;
+            utterance.pitch = 1.1;
+
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoice = voices.find((voice) => /en(-|_)?(gb|us|au|ie)/i.test(voice.lang)) || voices[0];
+            if (preferredVoice) {
+              utterance.voice = preferredVoice;
+            }
+
+            if (window.speechSynthesis.paused) {
+              window.speechSynthesis.resume();
+            }
+
+            window.speechSynthesis.speak(utterance);
+          } catch (error) {
+            console.warn('Speech playback failed:', error);
+          }
+        };
+
+        if (window.speechSynthesis.getVoices().length === 0) {
+          const voiceListener = () => {
+            window.speechSynthesis.onvoiceschanged = null;
+            playSpeech();
+          };
+
+          window.speechSynthesis.onvoiceschanged = voiceListener;
+          setTimeout(playSpeech, 250);
+          return;
+        }
+
+        playSpeech();
+      }
+
+      function revealHint() {
+        if (!currentWord || !wordSlots.children.length) return;
+
+        markUserInteraction();
+        const slots = Array.from(wordSlots.children);
+        const currentStates = slots.map((slot) => ({
+          text: slot.textContent.trim(),
+          filled: slot.classList.contains('filled')
+        }));
+
+        elapsedSeconds += 5;
+        startTimestamp -= 5000;
+        timerEl.textContent = formatTime(elapsedSeconds);
+
+        slots.forEach((slot, index) => {
+          slot.classList.remove('filled');
+          slot.textContent = currentWord.word[index];
+        });
+
+        setStatus('Hint! 5 seconds added.', '');
+
+        setTimeout(() => {
+          slots.forEach((slot, index) => {
+            const state = currentStates[index];
+            if (state.filled) {
+              slot.textContent = state.text;
+              slot.classList.add('filled');
+            } else {
+              slot.textContent = '';
+              slot.classList.remove('filled');
+            }
+          });
+          setStatus('Drag the letters into place.', '');
+        }, 900);
+      }
+
+      function startTimer() {
+        if (timerId) clearInterval(timerId);
+        startTimestamp = Date.now() - elapsedSeconds * 1000;
+        timerId = setInterval(() => {
+          elapsedSeconds = Math.floor((Date.now() - startTimestamp) / 1000);
+          timerEl.textContent = formatTime(elapsedSeconds);
+        }, 250);
+      }
+
+      function stopTimer() {
+        if (timerId) {
+          clearInterval(timerId);
+          timerId = null;
+        }
+      }
+
+      function clearSlots() {
+        wordSlots.innerHTML = '';
+        letterBank.innerHTML = '';
+      }
+
+      function renderWordSlots() {
+        clearSlots();
+        for (let i = 0; i < currentWord.word.length; i += 1) {
+          const slot = document.createElement('div');
+          slot.className = 'slot';
+          slot.dataset.index = String(i);
+          slot.setAttribute('aria-label', `Letter slot ${i + 1}`);
+          slot.addEventListener('dragover', (event) => event.preventDefault());
+          slot.addEventListener('drop', (event) => {
+            event.preventDefault();
+            if (!draggedLetter || !draggedLetterId) return;
+
+            markUserInteraction();
+            const expected = currentWord.word[i];
+            const tile = document.querySelector(`.letter-tile[data-id="${draggedLetterId}"]`);
+            if (!tile) return;
+
+            const placedLetter = tile.dataset.letter;
+            if (placedLetter !== expected) {
+              slot.classList.add('wrong');
+              setTimeout(() => slot.classList.remove('wrong'), 300);
+              return;
+            }
+
+            tile.classList.add('hidden');
+            slot.textContent = placedLetter;
+            slot.classList.add('filled');
+            placedCount += 1;
+            draggedLetter = null;
+            draggedLetterId = null;
+
+            if (placedCount === currentWord.word.length) {
+              score += 1;
+              updateHud();
+              setStatus('Well done! Great spelling.', 'success');
+              setTimeout(() => {
+                currentIndex += 1;
+                if (currentIndex >= gameWords.length) {
+                  endGame();
+                } else {
+                  showNextWord();
+                }
+              }, 900);
+            }
+          });
+          wordSlots.appendChild(slot);
+        }
+      }
+
+      function renderLetterBank() {
+        const letters = shuffleArray(currentWord.word.split('')); 
+        letters.forEach((letter, index) => {
+          const tile = document.createElement('button');
+          tile.type = 'button';
+          tile.className = 'letter-tile';
+          tile.draggable = true;
+          tile.textContent = letter;
+          tile.dataset.letter = letter;
+          tile.dataset.id = `letter-${currentIndex}-${index}-${Math.random().toString(16).slice(2)}`;
+          tile.addEventListener('dragstart', (event) => {
+            markUserInteraction();
+            draggedLetter = letter;
+            draggedLetterId = tile.dataset.id;
+            event.dataTransfer.setData('text/plain', letter);
+          });
+          tile.addEventListener('dragend', () => {
+            draggedLetter = null;
+            draggedLetterId = null;
+          });
+          letterBank.appendChild(tile);
+        });
+      }
+
+      function showNextWord() {
+        if (currentIndex >= gameWords.length) {
+          endGame();
+          return;
+        }
+
+        currentWord = gameWords[currentIndex];
+        placedCount = 0;
+        wordImage.src = currentWord.image;
+        wordImage.alt = currentWord.word;
+        wordFlash.textContent = currentWord.word;
+        wordFlash.classList.remove('fade-out');
+        wordSlots.innerHTML = '';
+        letterBank.innerHTML = '';
+        setStatus('Memorise the word, then build it.', '');
+        updateHud();
+
+        setTimeout(() => {
+          wordFlash.classList.add('fade-out');
+        }, 1200);
+
+        setTimeout(() => {
+          renderWordSlots();
+          renderLetterBank();
+          setStatus('Drag the letters into place.', '');
+          speakWord(currentWord.word);
+        }, 1750);
+      }
+
+      function endGame() {
+        stopTimer();
+        wordFlash.textContent = 'Finished!';
+        wordFlash.classList.remove('fade-out');
+        wordSlots.innerHTML = '';
+        letterBank.innerHTML = '';
+        setStatus(`You finished in ${formatTime(elapsedSeconds)}. Great effort!`, 'success');
+      }
+
+      listenBtn.addEventListener('click', () => {
+        markUserInteraction();
+        if (currentWord) {
+          speakWord(currentWord.word);
+        }
+      });
+
+      hintBtn.addEventListener('click', () => {
+        revealHint();
+      });
+
+      function startGame() {
+        gameWords = shuffleArray(words);
+        currentIndex = 0;
+        score = 0;
+        elapsedSeconds = 0;
+        updateHud();
+        startTimer();
+        showNextWord();
+      }
+
+      startGame();
+    </script>
+  </body>
+</html>
