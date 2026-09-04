@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spelling Tetris</title>
+    <style>
+      :root {
+        --bg: #101828;
+        --panel: #111827;
+        --panel-alt: #1f2937;
+        --line: #4b5563;
+        --text: #f8fafc;
+        --muted: #dfe7f3;
+        --accent: #2e9f5f;
+        --accent-2: #2a78c9;
+        --warning: #d97706;
+        --danger: #c43d4b;
+        --shape-1: #4e79a7;
+        --shape-2: #59a14f;
+        --shape-3: #e15759;
+        --shape-4: #edc948;
+        --shape-5: #af7aa1;
+        --shape-6: #9c755f;
+        --shape-7: #76b7b2;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(circle at top, #1e293b, var(--bg) 60%);
+        color: var(--text);
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .game-shell {
+        width: min(92vw, 820px);
+        background: rgba(15, 23, 42, 0.92);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 18px;
+        box-shadow: 0 30px 60px rgba(15, 23, 42, 0.45);
+        padding: 1.2rem;
+      }
+
+      .top-bar {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 0.75rem;
+      }
+
+      .back-button {
+        appearance: none;
+        border: 2px solid rgba(148, 163, 184, 0.4);
+        background: rgba(148, 163, 184, 0.12);
+        color: var(--text);
+        font-size: 1.05rem;
+        font-weight: 700;
+        padding: 0.7rem 1rem;
+        border-radius: 12px;
+        cursor: pointer;
+      }
+
+      .back-button:hover,
+      .back-button:focus-visible {
+        background: rgba(148, 163, 184, 0.22);
+      }
+
+      h1 {
+        margin: 0 0 1rem;
+        text-align: center;
+        font-size: clamp(2.4rem, 5vw, 3.4rem);
+      }
+
+      .setup-toolbar {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 0.75rem;
+      }
+
+      .setup-panel {
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: opacity 0.2s ease, max-height 0.25s ease, margin 0.25s ease, padding 0.25s ease;
+        overflow: hidden;
+      }
+
+      .setup-panel.hidden {
+        display: none;
+      }
+
+      .setup-panel label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+        font-size: 1.2rem;
+      }
+
+      .setup-panel textarea {
+        width: 100%;
+        min-height: 140px;
+        resize: vertical;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        background: rgba(15, 23, 42, 0.9);
+        color: var(--text);
+        padding: 0.9rem;
+        font-size: 1.1rem;
+      }
+
+      .speed-control {
+        margin-top: 1rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(148, 163, 184, 0.25);
+      }
+
+      .speed-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.6rem;
+        font-weight: 700;
+      }
+
+      .speed-slider {
+        width: 100%;
+        accent-color: #38bdf8;
+      }
+
+      .setup-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+      }
+
+      .toggle-list-btn {
+        background: rgba(148, 163, 184, 0.15);
+        color: var(--text);
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        border-radius: 12px;
+        padding: 0.9rem 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 1.2rem;
+      }
+
+      .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.7rem;
+        min-height: 3.4rem;
+        padding: 1rem 1.05rem;
+        font-size: 1.2rem;
+      }
+
+      .icon-btn .symbol {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.8rem;
+        height: 2.8rem;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 2px solid rgba(15, 23, 42, 0.5);
+        box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.12);
+        color: #000000;
+        flex-shrink: 0;
+      }
+
+      .icon-btn .symbol svg {
+        width: 1.55rem;
+        height: 1.55rem;
+        display: block;
+        fill: #000000;
+      }
+
+      .symbol-text {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        line-height: 1;
+        font-weight: 900;
+        color: #000000;
+      }
+
+      #listen-btn .symbol svg,
+      #start-btn .symbol svg,
+      #pause-btn .symbol svg {
+        width: 1.75rem;
+        height: 1.75rem;
+      }
+
+      #listen-btn .symbol,
+      #hint-btn .symbol,
+      #submit-word-btn .symbol {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        width: auto;
+        height: auto;
+        padding: 0;
+      }
+
+      #hint-btn .symbol-text {
+        font-size: 2.2rem;
+      }
+
+      #submit-word-btn .symbol-text {
+        font-size: 2.1rem;
+      }
+
+      #listen-btn .symbol-text {
+        font-size: 2.2rem;
+        margin-right: 0.05rem;
+      }
+
+      .hud {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        color: var(--muted);
+        font-size: 1.2rem;
+      }
+
+      .hud span {
+        color: var(--text);
+      }
+
+      .game-wrap {
+        display: flex;
+        justify-content: center;
+        gap: 1.25rem;
+        align-items: flex-start;
+      }
+
+      canvas {
+        display: block;
+        background: linear-gradient(to bottom, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 1));
+        border: 3px solid rgba(148, 163, 184, 0.5);
+        border-radius: 12px;
+      }
+
+      #board {
+        width: min(60vw, 300px);
+        height: auto;
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        min-width: 170px;
+      }
+
+      .next-panel {
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 12px;
+        padding: 0.75rem;
+      }
+
+      #next {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+      }
+
+      .controls button,
+      #start-btn,
+      #pause-btn,
+      #save-words-btn,
+      #listen-btn,
+      #hint-btn,
+      #submit-word-btn {
+        border: 2px solid rgba(255, 255, 255, 0.18);
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--accent-2), #1d4f94);
+        color: #fff;
+        font-size: 1.25rem;
+        font-weight: 700;
+        padding: 1rem 1.1rem;
+        cursor: pointer;
+        transition: transform 0.15s ease, opacity 0.15s ease;
+      }
+
+      .controls button:hover,
+      #start-btn:hover,
+      #pause-btn:hover,
+      #save-words-btn:hover,
+      #listen-btn:hover,
+      #hint-btn:hover,
+      #submit-word-btn:hover {
+        transform: translateY(-1px);
+      }
+
+      .controls button:active,
+      #start-btn:active,
+      #pause-btn:active,
+      #save-words-btn:active,
+      #listen-btn:active,
+      #hint-btn:active,
+      #submit-word-btn:active {
+        transform: translateY(0);
+      }
+
+      #start-btn,
+      #save-words-btn {
+        width: 100%;
+        background: linear-gradient(135deg, #2f9e6e, #1d7a52);
+        font-size: 1.2rem;
+      }
+
+      #pause-btn {
+        width: 100%;
+        background: linear-gradient(135deg, #d97706, #b45309);
+        font-size: 1.1rem;
+      }
+
+      .controls .left { grid-column: 1; }
+      .controls .down { grid-column: 2; }
+      .controls .right { grid-column: 3; }
+      .controls .rotate { grid-column: 1 / span 3; }
+
+      .spell-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.72);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+      }
+
+      .spell-modal.hidden {
+        display: none;
+      }
+
+      .spell-box {
+        width: min(90vw, 460px);
+        background: rgba(15, 23, 42, 0.98);
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        border-radius: 18px;
+        padding: 1.5rem;
+        box-shadow: 0 25px 60px rgba(15, 23, 42, 0.55);
+      }
+
+      .spell-box h2 {
+        margin: 0 0 0.5rem;
+        text-align: center;
+        font-size: 2rem;
+      }
+
+      #challenge-instruction {
+        margin: 0 0 0.9rem;
+        text-align: center;
+        color: var(--muted);
+        font-size: 1.4rem;
+        font-weight: 700;
+      }
+
+      .word-display {
+        min-height: 3rem;
+        display: grid;
+        place-items: center;
+        margin: 0.75rem 0 1rem;
+        background: rgba(56, 189, 248, 0.12);
+        border: 1px solid rgba(56, 189, 248, 0.4);
+        border-radius: 10px;
+        font-size: clamp(1.8rem, 4vw, 2.4rem);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--text);
+      }
+
+      .word-display.hidden {
+        display: none;
+      }
+
+      .challenge-image-wrap {
+        display: grid;
+        place-items: center;
+        margin: 0.75rem 0 1rem;
+        min-height: 170px;
+        background: linear-gradient(135deg, rgba(42, 120, 201, 0.12), rgba(46, 159, 95, 0.12));
+        border: 2px solid rgba(148, 163, 184, 0.2);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .challenge-image-wrap img {
+        display: block;
+        max-width: 100%;
+        max-height: 170px;
+        object-fit: contain;
+        border-radius: 10px;
+      }
+
+      .challenge-image-wrap.hidden {
+        display: none;
+      }
+
+      #word-input {
+        width: 100%;
+        padding: 0.9rem 1rem;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        background: rgba(15, 23, 42, 0.85);
+        color: var(--text);
+        font-size: 1.2rem;
+      }
+
+      .challenge-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.8rem;
+        margin-top: 0.9rem;
+      }
+
+      #hint-btn {
+        background: linear-gradient(135deg, #d97706, #b45309);
+      }
+
+      #submit-word-btn {
+        background: linear-gradient(135deg, #2f9e6e, #1d7a52);
+      }
+
+      #challenge-status {
+        min-height: 1.8rem;
+        margin: 0.75rem 0 0;
+        text-align: center;
+        font-weight: 700;
+        color: var(--muted);
+        font-size: 1.4rem;
+      }
+
+      #status {
+        margin: 1rem 0 0;
+        min-height: 1.8rem;
+        text-align: center;
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 1.4rem;
+      }
+
+      @media (max-width: 620px) {
+        .game-wrap {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .sidebar {
+          width: min(100%, 280px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="game-shell">
+      <div class="top-bar">
+        <button class="back-button" type="button" onclick="window.location.href='index.html'" aria-label="Go back to the game chooser">← Back</button>
+      </div>
+      <h1>Spelling Tetris</h1>
+
+      <div class="setup-toolbar">
+        <button id="toggle-list-btn" class="toggle-list-btn icon-btn" type="button" aria-label="Hide spelling list"><span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5c5.5 0 10 7 10 7s-4.5 7-10 7S2 12 2 12s4.5-7 10-7zm0 2.2A4.8 4.8 0 1 0 12 16.8 4.8 4.8 0 0 0 12 7.2zm0 2.1a2.7 2.7 0 1 1 0 5.4 2.7 2.7 0 0 1 0-5.4z"/></svg></span> Hide list</button>
+      </div>
+
+      <section id="setup-panel" class="setup-panel" aria-label="Weekly spelling list setup">
+        <label for="word-list">Weekly spellings</label>
+        <textarea id="word-list" aria-label="Custom spellings">door
+floor
+poor
+because
+badge
+edge
+bridge
+dodge
+fudge
+</textarea>
+
+        <div class="speed-control">
+          <div class="speed-header">
+            <label for="speed-slider">Game speed</label>
+            <span id="speed-value">1.0x</span>
+          </div>
+          <input id="speed-slider" class="speed-slider" type="range" min="0.5" max="2" step="0.1" value="1" aria-label="Adjust game speed" />
+        </div>
+
+        <div class="setup-actions">
+          <button id="save-words-btn" type="button">Save spellings</button>
+        </div>
+      </section>
+
+      <div class="hud">
+        <div>Score: <span id="score">0</span></div>
+        <div>Lines: <span id="lines">0</span></div>
+        <div>Level: <span id="level">1</span></div>
+      </div>
+
+      <div class="game-wrap">
+        <canvas id="board" width="300" height="600" aria-label="Tetris board"></canvas>
+
+        <aside class="sidebar">
+          <div class="next-panel">
+            <canvas id="next" width="120" height="120" aria-label="Next piece preview"></canvas>
+          </div>
+
+          <button id="start-btn" class="icon-btn" type="button"><span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 5.5v13l11-6.5-11-6.5z"/></svg></span> Start</button>
+          <button id="pause-btn" class="icon-btn" type="button"><span class="symbol" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></span> Pause</button>
+
+          <div class="controls">
+            <button class="left" data-action="left" type="button">◀</button>
+            <button class="down" data-action="down" type="button">▼</button>
+            <button class="right" data-action="right" type="button">▶</button>
+            <button class="rotate" data-action="rotate" type="button">Rotate</button>
+          </div>
+        </aside>
+      </div>
+
+      <p id="status">Add your weekly spellings, then press Start to play.</p>
+    </main>
+
+    <div id="spell-modal" class="spell-modal hidden" aria-live="polite" aria-label="Spelling challenge">
+      <div class="spell-box">
+        <h2>Spelling challenge</h2>
+        <p id="challenge-instruction">Listen and look at the picture. Type the word.</p>
+        <button id="listen-btn" class="icon-btn" type="button"><span class="symbol symbol-text" aria-hidden="true">▶</span> Listen again</button>
+        <div id="challenge-image-wrap" class="challenge-image-wrap" aria-live="polite">
+          <img id="challenge-image" src="images/badge.jpeg" alt="Word picture clue" />
+        </div>
+        <div id="word-display" class="word-display hidden" aria-live="polite"></div>
+        <input id="word-input" type="text" autocomplete="off" placeholder="Type the spelling here" />
+        <div class="challenge-actions">
+          <button id="hint-btn" class="icon-btn" type="button"><span class="symbol symbol-text" aria-hidden="true">?</span> Hint</button>
+          <button id="submit-word-btn" class="icon-btn" type="button"><span class="symbol symbol-text" aria-hidden="true">✔</span> Check</button>
+        </div>
+        <p id="challenge-status"></p>
+      </div>
+    </div>
+
+    <script>
+      const COLS = 10;
+      const ROWS = 20;
+      const BLOCK = 30;
+      const DEFAULT_WORDS = ['door', 'floor', 'poor', 'because', 'badge', 'edge', 'bridge', 'dodge', 'fudge'];
+      const COLORS = {
+        I: '#4e79a7',
+        O: '#edc948',
+        T: '#af7aa1',
+        S: '#59a14f',
+        Z: '#e15759',
+        J: '#9c755f',
+        L: '#76b7b2'
+      };
+
+      const SHAPES = {
+        I: [[1, 1, 1, 1]],
+        O: [[1, 1], [1, 1]],
+        T: [[0, 1, 0], [1, 1, 1]],
+        S: [[0, 1, 1], [1, 1, 0]],
+        Z: [[1, 1, 0], [0, 1, 1]],
+        J: [[1, 0, 0], [1, 1, 1]],
+        L: [[0, 0, 1], [1, 1, 1]]
+      };
+
+      const boardCanvas = document.getElementById('board');
+      const nextCanvas = document.getElementById('next');
+      const boardCtx = boardCanvas.getContext('2d');
+      const nextCtx = nextCanvas.getContext('2d');
+      const scoreEl = document.getElementById('score');
+      const linesEl = document.getElementById('lines');
+      const levelEl = document.getElementById('level');
+      const statusEl = document.getElementById('status');
+      const startBtn = document.getElementById('start-btn');
+      const pauseBtn = document.getElementById('pause-btn');
+      const saveWordsBtn = document.getElementById('save-words-btn');
+      const setupPanel = document.getElementById('setup-panel');
+      const toggleListBtn = document.getElementById('toggle-list-btn');
+      const spellModal = document.getElementById('spell-modal');
+      const listenBtn = document.getElementById('listen-btn');
+      const hintBtn = document.getElementById('hint-btn');
+      const submitWordBtn = document.getElementById('submit-word-btn');
+      const wordInput = document.getElementById('word-input');
+      const wordDisplay = document.getElementById('word-display');
+      const challengeStatus = document.getElementById('challenge-status');
+      const challengeImage = document.getElementById('challenge-image');
+      const challengeImageWrap = document.getElementById('challenge-image-wrap');
+      const wordListInput = document.getElementById('word-list');
+      const speedSlider = document.getElementById('speed-slider');
+      const speedValue = document.getElementById('speed-value');
+      const WORD_IMAGES = {
+        badge: 'images/badge.jpeg',
+        because: 'images/because.jpeg',
+        bridge: 'images/bridge.jpeg',
+        dodge: 'images/dodge.jpeg',
+        door: 'images/door.jpeg',
+        edge: 'images/edge.jpeg',
+        floor: 'images/floor.jpeg',
+        fudge: 'images/fudge.jpeg',
+        poor: 'images/poor.jpeg'
+      };
+
+      let hasUserInteracted = false;
+
+      const state = {
+        board: [],
+        current: null,
+        next: null,
+        score: 0,
+        lines: 0,
+        level: 1,
+        running: false,
+        challengeActive: false,
+        dropTimer: null,
+        spellings: [...DEFAULT_WORDS],
+        currentSpelling: '',
+        wordIndex: 0,
+        hintTimer: null,
+        speedMultiplier: 1,
+        statusFlashTimer: null
+      };
+
+      function createBoard() {
+        return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+      }
+
+      function randomType() {
+        const types = Object.keys(SHAPES);
+        return types[Math.floor(Math.random() * types.length)];
+      }
+
+      function createPiece(type = randomType()) {
+        const matrix = SHAPES[type].map((row) => [...row]);
+        return {
+          type,
+          matrix,
+          x: Math.floor((COLS - matrix[0].length) / 2),
+          y: -1
+        };
+      }
+
+      function rotateMatrix(matrix) {
+        return matrix[0].map((_, index) => matrix.map((row) => row[index]).reverse());
+      }
+
+      function collides(piece, offsetX = 0, offsetY = 0, testMatrix = piece.matrix) {
+        for (let y = 0; y < testMatrix.length; y += 1) {
+          for (let x = 0; x < testMatrix[y].length; x += 1) {
+            if (!testMatrix[y][x]) continue;
+
+            const newX = piece.x + x + offsetX;
+            const newY = piece.y + y + offsetY;
+
+            if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
+            if (newY >= 0 && state.board[newY][newX]) return true;
+          }
+        }
+        return false;
+      }
+
+      function mergePiece() {
+        state.current.matrix.forEach((row, y) => {
+          row.forEach((value, x) => {
+            if (!value) return;
+            const boardY = state.current.y + y;
+            const boardX = state.current.x + x;
+            if (boardY >= 0) {
+              state.board[boardY][boardX] = state.current.type;
+            }
+          });
+        });
+      }
+
+      function getSavedWords() {
+        const rawText = (wordListInput.value || '').replace(/\\n/g, '\n');
+        const words = rawText
+          .split(/[\n,]+/)
+          .map((word) => word.trim().toLowerCase())
+          .filter(Boolean);
+
+        state.spellings = words.length ? words : [...DEFAULT_WORDS];
+        return state.spellings;
+      }
+
+      function pauseGame() {
+        state.running = false;
+        if (state.dropTimer) {
+          clearInterval(state.dropTimer);
+          state.dropTimer = null;
+        }
+      }
+
+      function markUserInteraction() {
+        hasUserInteracted = true;
+      }
+
+      function speakWord(word) {
+        if (!('speechSynthesis' in window)) {
+          challengeStatus.textContent = 'Audio is not supported in this browser.';
+          return;
+        }
+
+        if (!hasUserInteracted) {
+          challengeStatus.textContent = 'Tap the play button to hear the word.';
+          return;
+        }
+
+        const playSpeech = () => {
+          try {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-GB';
+            utterance.rate = 0.9;
+            utterance.pitch = 1.1;
+
+            const voices = window.speechSynthesis.getVoices();
+            const preferredVoice = voices.find((voice) => /en(-|_)?(gb|us|au|ie)/i.test(voice.lang)) || voices[0];
+            if (preferredVoice) {
+              utterance.voice = preferredVoice;
+            }
+
+            if (window.speechSynthesis.paused) {
+              window.speechSynthesis.resume();
+            }
+
+            window.speechSynthesis.speak(utterance);
+          } catch (error) {
+            console.warn('Speech playback failed:', error);
+          }
+        };
+
+        if (window.speechSynthesis.getVoices().length === 0) {
+          const voiceListener = () => {
+            window.speechSynthesis.onvoiceschanged = null;
+            playSpeech();
+          };
+
+          window.speechSynthesis.onvoiceschanged = voiceListener;
+          setTimeout(playSpeech, 250);
+          return;
+        }
+
+        playSpeech();
+      }
+
+      function clearHintDisplay() {
+        if (state.hintTimer) {
+          clearTimeout(state.hintTimer);
+          state.hintTimer = null;
+        }
+        wordDisplay.classList.add('hidden');
+        wordDisplay.textContent = '';
+      }
+
+      function setStatusVisual(icon, text, isSuccess = false, isError = false, duration = 1800) {
+        challengeStatus.innerHTML = `${icon} ${text}`;
+        challengeStatus.style.color = isSuccess ? '#4ade80' : isError ? '#f87171' : '#cbd5e1';
+        challengeStatus.style.fontSize = isSuccess || !isError ? '1.6rem' : '1.05rem';
+        challengeStatus.style.fontWeight = '800';
+
+        if (state.statusFlashTimer) clearTimeout(state.statusFlashTimer);
+        state.statusFlashTimer = setTimeout(() => {
+          challengeStatus.innerHTML = '';
+          challengeStatus.style.color = '#cbd5e1';
+          challengeStatus.style.fontSize = 'inherit';
+          challengeStatus.style.fontWeight = '700';
+        }, duration);
+      }
+
+      function showHint() {
+        if (!state.currentSpelling) return;
+        wordDisplay.textContent = state.currentSpelling;
+        wordDisplay.classList.remove('hidden');
+
+        if (state.hintTimer) clearTimeout(state.hintTimer);
+        state.hintTimer = setTimeout(() => {
+          clearHintDisplay();
+        }, 2000);
+      }
+
+      function updateChallengeImage(word) {
+        const imagePath = WORD_IMAGES[word];
+
+        if (imagePath) {
+          challengeImage.src = imagePath;
+          challengeImage.alt = `Picture clue for ${word}`;
+          challengeImageWrap.classList.remove('hidden');
+          return;
+        }
+
+        challengeImageWrap.classList.add('hidden');
+      }
+
+      function triggerChallengeAudio() {
+        if (!state.currentSpelling) return;
+        markUserInteraction();
+        if ('speechSynthesis' in window && window.speechSynthesis.resume) {
+          window.speechSynthesis.resume();
+        }
+        speakWord(state.currentSpelling);
+      }
+
+      function startSpellingChallenge() {
+        const words = getSavedWords();
+        if (!words.length) {
+          statusEl.textContent = 'Add at least one spelling word first.';
+          return;
+        }
+
+        state.currentSpelling = words[state.wordIndex % words.length];
+        state.wordIndex = (state.wordIndex + 1) % words.length;
+        state.challengeActive = true;
+        pauseGame();
+        wordInput.value = '';
+        wordInput.focus();
+        challengeStatus.innerHTML = 'Listen and say the word.';
+        challengeStatus.style.color = '#cbd5e1';
+        challengeStatus.style.fontSize = '1.1rem';
+        challengeStatus.style.fontWeight = '700';
+        clearHintDisplay();
+        updateChallengeImage(state.currentSpelling);
+        spellModal.classList.remove('hidden');
+        triggerChallengeAudio();
+      }
+
+      function completeSpellingChallenge() {
+        state.challengeActive = false;
+        clearHintDisplay();
+        spellModal.classList.add('hidden');
+        wordInput.value = '';
+        statusEl.textContent = 'Nice spelling! Back to the game.';
+        state.running = true;
+        restartTimer();
+      }
+
+      function submitSpelling() {
+        if (!state.currentSpelling) return;
+        const answer = wordInput.value.trim().toLowerCase();
+
+        if (!answer) {
+          challengeStatus.textContent = 'Type the word before checking.';
+          challengeStatus.style.fontSize = '1.4rem';
+          challengeStatus.style.fontWeight = '800';
+          return;
+        }
+
+        if (answer === state.currentSpelling.toLowerCase()) {
+          setStatusVisual('✅', 'Correct! Great spelling!', true, false, 2600);
+          setTimeout(() => {
+            completeSpellingChallenge();
+          }, 2400);
+          return;
+        }
+
+        setStatusVisual('❌', 'Not quite — listen again and try again.', false, true);
+        speakWord(state.currentSpelling);
+      }
+
+      function clearLines() {
+        let cleared = 0;
+
+        for (let y = ROWS - 1; y >= 0; y -= 1) {
+          if (state.board[y].every(Boolean)) {
+            state.board.splice(y, 1);
+            state.board.unshift(Array(COLS).fill(null));
+            cleared += 1;
+            y += 1;
+          }
+        }
+
+        if (cleared > 0) {
+          state.lines += cleared;
+          const lineScores = [0, 100, 300, 500, 800];
+          state.score += lineScores[cleared] * state.level;
+          state.level = Math.floor(state.lines / 10) + 1;
+          updateHud();
+          startSpellingChallenge();
+        }
+      }
+
+      function spawnPiece() {
+        state.current = state.next || createPiece();
+        state.current.x = Math.floor((COLS - state.current.matrix[0].length) / 2);
+        state.current.y = -1;
+        state.next = createPiece();
+
+        if (collides(state.current)) {
+          endGame();
+          return;
+        }
+
+        drawNext();
+      }
+
+      function movePiece(dx, dy) {
+        if (!state.running || !state.current || state.challengeActive) return false;
+
+        if (!collides(state.current, dx, dy)) {
+          state.current.x += dx;
+          state.current.y += dy;
+          drawBoard();
+          return true;
+        }
+
+        if (dy > 0) {
+          lockPiece();
+        }
+
+        return false;
+      }
+
+      function rotatePiece() {
+        if (!state.running || !state.current || state.challengeActive) return;
+
+        const rotated = rotateMatrix(state.current.matrix);
+        const kicks = [0, -1, 1, -2, 2];
+
+        for (const kick of kicks) {
+          if (!collides(state.current, kick, 0, rotated)) {
+            state.current.matrix = rotated;
+            state.current.x += kick;
+            drawBoard();
+            return;
+          }
+        }
+      }
+
+      function lockPiece() {
+        mergePiece();
+        clearLines();
+        if (!state.challengeActive) {
+          spawnPiece();
+        }
+        drawBoard();
+      }
+
+      function tick() {
+        if (!state.running) return;
+        movePiece(0, 1);
+      }
+
+      function gameLoop() {
+        tick();
+      }
+
+      function restartTimer() {
+        if (state.dropTimer) clearInterval(state.dropTimer);
+        const baseDelay = Math.max(100, 700 - (state.level - 1) * 50);
+        const adjustedDelay = Math.max(140, baseDelay / state.speedMultiplier);
+        state.dropTimer = setInterval(gameLoop, adjustedDelay);
+      }
+
+      function updateSpeedLabel() {
+        speedValue.textContent = `${Number(state.speedMultiplier).toFixed(1)}x`;
+      }
+
+      function toggleSpellingList() {
+        const isHidden = setupPanel.classList.toggle('hidden');
+        toggleListBtn.textContent = isHidden ? 'Show list' : 'Hide list';
+        toggleListBtn.setAttribute('aria-label', isHidden ? 'Show spelling list' : 'Hide spelling list');
+        if (state.running && !isHidden) {
+          statusEl.textContent = 'Game in progress — list hidden while playing.';
+        }
+      }
+
+      function pauseOrResumeGame() {
+        if (!state.running && !state.challengeActive) return;
+
+        if (state.challengeActive) {
+          statusEl.textContent = 'The spelling challenge is active; finish it before pausing.';
+          return;
+        }
+
+        if (state.running) {
+          pauseGame();
+          state.running = false;
+          pauseBtn.textContent = 'Resume';
+          statusEl.textContent = 'Game paused.';
+          return;
+        }
+
+        state.running = true;
+        pauseBtn.textContent = 'Pause';
+        statusEl.textContent = 'Game resumed.';
+        restartTimer();
+      }
+
+      function startGame() {
+        const words = getSavedWords();
+        if (!words.length) {
+          statusEl.textContent = 'Add at least one spelling word before starting.';
+          return;
+        }
+
+        setupPanel.classList.add('hidden');
+        toggleListBtn.textContent = 'Show list';
+        toggleListBtn.setAttribute('aria-label', 'Show spelling list');
+        pauseBtn.textContent = 'Pause';
+        state.board = createBoard();
+        state.score = 0;
+        state.lines = 0;
+        state.level = 1;
+        state.current = createPiece();
+        state.next = createPiece();
+        state.running = true;
+        state.challengeActive = false;
+        clearHintDisplay();
+        spellModal.classList.add('hidden');
+        statusEl.textContent = 'Game in progress';
+        updateHud();
+        spawnPiece();
+        drawBoard();
+        restartTimer();
+      }
+
+      function endGame() {
+        state.running = false;
+        state.challengeActive = false;
+        if (state.dropTimer) clearInterval(state.dropTimer);
+        statusEl.textContent = `Game over! Final score: ${state.score}`;
+      }
+
+      function updateHud() {
+        scoreEl.textContent = state.score;
+        linesEl.textContent = state.lines;
+        levelEl.textContent = state.level;
+      }
+
+      function drawCell(ctx, x, y, color, size) {
+        ctx.fillStyle = color;
+        ctx.fillRect(x * size, y * size, size, size);
+        ctx.strokeStyle = 'rgba(15, 23, 42, 0.45)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x * size + 0.5, y * size + 0.5, size - 1, size - 1);
+      }
+
+      function drawBoard() {
+        boardCtx.clearRect(0, 0, boardCanvas.width, boardCanvas.height);
+
+        for (let y = 0; y < ROWS; y += 1) {
+          const row = state.board[y];
+          if (!row) continue;
+
+          for (let x = 0; x < COLS; x += 1) {
+            const type = row[x];
+            if (type) {
+              drawCell(boardCtx, x, y, COLORS[type], BLOCK);
+            }
+          }
+        }
+
+        if (state.current) {
+          state.current.matrix.forEach((row, y) => {
+            row.forEach((value, x) => {
+              if (!value) return;
+              const boardX = state.current.x + x;
+              const boardY = state.current.y + y;
+              if (boardY >= 0) {
+                drawCell(boardCtx, boardX, boardY, COLORS[state.current.type], BLOCK);
+              }
+            });
+          });
+        }
+      }
+
+      function drawNext() {
+        nextCtx.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
+
+        if (!state.next) return;
+
+        const matrix = state.next.matrix;
+        const previewSize = 24;
+        const offsetX = Math.floor((nextCanvas.width - matrix[0].length * previewSize) / 2);
+        const offsetY = Math.floor((nextCanvas.height - matrix.length * previewSize) / 2);
+
+        matrix.forEach((row, y) => {
+          row.forEach((value, x) => {
+            if (!value) return;
+            nextCtx.fillStyle = COLORS[state.next.type];
+            nextCtx.fillRect(offsetX + x * previewSize, offsetY + y * previewSize, previewSize, previewSize);
+            nextCtx.strokeStyle = 'rgba(15, 23, 42, 0.45)';
+            nextCtx.strokeRect(offsetX + x * previewSize + 0.5, offsetY + y * previewSize + 0.5, previewSize - 1, previewSize - 1);
+          });
+        });
+      }
+
+      window.addEventListener('keydown', (event) => {
+        if (state.challengeActive) {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            submitSpelling();
+          }
+          return;
+        }
+
+        if (!state.running && event.key !== ' ' && event.key !== 'Enter') return;
+
+        switch (event.key) {
+          case 'ArrowLeft':
+            event.preventDefault();
+            movePiece(-1, 0);
+            break;
+          case 'ArrowRight':
+            event.preventDefault();
+            movePiece(1, 0);
+            break;
+          case 'ArrowDown':
+            event.preventDefault();
+            movePiece(0, 1);
+            break;
+          case 'ArrowUp':
+          case 'x':
+          case 'X':
+            event.preventDefault();
+            rotatePiece();
+            break;
+          case ' ':
+            event.preventDefault();
+            if (!state.running) {
+              startGame();
+            } else {
+              while (movePiece(0, 1)) {}
+            }
+            break;
+          case 'Enter':
+            event.preventDefault();
+            if (!state.running) startGame();
+            break;
+          default:
+            break;
+        }
+      });
+
+      document.querySelectorAll('[data-action]').forEach((button) => {
+        button.addEventListener('click', () => {
+          if (state.challengeActive) return;
+
+          const action = button.dataset.action;
+          if (!state.running && action !== 'start') return;
+
+          if (action === 'left') movePiece(-1, 0);
+          if (action === 'right') movePiece(1, 0);
+          if (action === 'down') movePiece(0, 1);
+          if (action === 'rotate') rotatePiece();
+        });
+      });
+
+      startBtn.addEventListener('click', () => {
+        markUserInteraction();
+        if (state.dropTimer) clearInterval(state.dropTimer);
+        startGame();
+      });
+
+      pauseBtn.addEventListener('click', () => {
+        markUserInteraction();
+        pauseOrResumeGame();
+      });
+
+      pauseBtn.innerHTML = '<span class="symbol">⏸</span> Pause';
+
+      toggleListBtn.addEventListener('click', () => {
+        if (state.running) {
+          toggleSpellingList();
+          return;
+        }
+        toggleSpellingList();
+      });
+
+      saveWordsBtn.addEventListener('click', () => {
+        const words = getSavedWords();
+        state.speedMultiplier = Number(speedSlider.value);
+        updateSpeedLabel();
+        if (state.running) {
+          restartTimer();
+        }
+        statusEl.textContent = `Saved ${words.length} spelling${words.length === 1 ? '' : 's'} for play.`;
+      });
+
+      speedSlider.addEventListener('input', (event) => {
+        state.speedMultiplier = Number(event.target.value);
+        updateSpeedLabel();
+        if (state.running) {
+          restartTimer();
+        }
+      });
+
+      listenBtn.addEventListener('click', () => {
+        triggerChallengeAudio();
+      });
+
+      hintBtn.addEventListener('click', () => {
+        showHint();
+      });
+
+      submitWordBtn.addEventListener('click', () => {
+        submitSpelling();
+      });
+
+      wordInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          submitSpelling();
+        }
+      });
+
+      document.addEventListener('pointerdown', markUserInteraction, { passive: true });
+      document.addEventListener('keydown', markUserInteraction, { passive: true });
+
+      state.board = createBoard();
+      wordListInput.value = DEFAULT_WORDS.join('\n');
+      state.speedMultiplier = Number(speedSlider.value);
+      updateSpeedLabel();
+      updateHud();
+      drawBoard();
+      drawNext();
+      statusEl.textContent = 'Add your weekly spellings, then press Start to play.';
+    </script>
+  </body>
+</html>
