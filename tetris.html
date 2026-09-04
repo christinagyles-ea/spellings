@@ -735,6 +735,21 @@ fudge
             utterance.rate = 0.9;
             utterance.pitch = 1.1;
 
+            utterance.onstart = () => {
+              challengeStatus.textContent = 'Listening...';
+              challengeStatus.style.color = '#cbd5e1';
+            };
+
+            utterance.onerror = () => {
+              challengeStatus.textContent = 'Audio is blocked by the browser or device settings — use the picture clue instead.';
+              challengeStatus.style.color = '#fbbf24';
+            };
+
+            utterance.onend = () => {
+              challengeStatus.textContent = 'Listen and say the word.';
+              challengeStatus.style.color = '#cbd5e1';
+            };
+
             const voices = window.speechSynthesis.getVoices();
             const preferredVoice = voices.find((voice) => /en(-|_)?(gb|us|au|ie)/i.test(voice.lang)) || voices[0];
             if (preferredVoice) {
@@ -748,6 +763,8 @@ fudge
             window.speechSynthesis.speak(utterance);
           } catch (error) {
             console.warn('Speech playback failed:', error);
+            challengeStatus.textContent = 'Audio is blocked by the browser or device settings — use the picture clue instead.';
+            challengeStatus.style.color = '#fbbf24';
           }
         };
 
