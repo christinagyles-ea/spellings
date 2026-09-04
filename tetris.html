@@ -636,6 +636,8 @@ fudge
         currentSpelling: '',
         wordIndex: 0,
         hintTimer: null,
+        challengeTimer: null,
+        challengeAudioTimer: null,
         speedMultiplier: 1,
         statusFlashTimer: null
       };
@@ -772,6 +774,17 @@ fudge
         wordDisplay.textContent = '';
       }
 
+      function clearChallengeTimers() {
+        if (state.challengeTimer) {
+          clearTimeout(state.challengeTimer);
+          state.challengeTimer = null;
+        }
+        if (state.challengeAudioTimer) {
+          clearTimeout(state.challengeAudioTimer);
+          state.challengeAudioTimer = null;
+        }
+      }
+
       function setStatusVisual(icon, text, isSuccess = false, isError = false, duration = 1800) {
         challengeStatus.innerHTML = `${icon} ${text}`;
         challengeStatus.style.color = isSuccess ? '#4ade80' : isError ? '#f87171' : '#cbd5e1';
@@ -817,7 +830,7 @@ fudge
         if ('speechSynthesis' in window && window.speechSynthesis.resume) {
           window.speechSynthesis.resume();
         }
-        window.setTimeout(() => {
+        state.challengeAudioTimer = window.setTimeout(() => {
           if (state.currentSpelling) {
             speakWord(state.currentSpelling);
           }
@@ -831,28 +844,33 @@ fudge
           return;
         }
 
+        clearChallengeTimers();
         state.currentSpelling = words[state.wordIndex % words.length];
         state.wordIndex = (state.wordIndex + 1) % words.length;
         state.challengeActive = true;
         pauseGame();
         wordInput.value = '';
         wordInput.focus();
-        challengeStatus.innerHTML = 'Listen and say the word.';
+        challengeStatus.innerHTML = hasUserInteracted ? 'Listen and say the word.' : 'Tap “Listen again” to hear the word.';
         challengeStatus.style.color = '#cbd5e1';
         challengeStatus.style.fontSize = '1.1rem';
         challengeStatus.style.fontWeight = '700';
         clearHintDisplay();
         updateChallengeImage(state.currentSpelling);
         spellModal.classList.remove('hidden');
-        window.setTimeout(() => {
-          if (state.challengeActive && state.currentSpelling) {
-            triggerChallengeAudio();
-          }
-        }, 120);
+
+        if (hasUserInteracted) {
+          state.challengeTimer = window.setTimeout(() => {
+            if (state.challengeActive && state.currentSpelling) {
+              triggerChallengeAudio();
+            }
+          }, 120);
+        }
       }
 
       function completeSpellingChallenge() {
         state.challengeActive = false;
+        clearChallengeTimers();
         clearHintDisplay();
         spellModal.classList.add('hidden');
         wordInput.value = '';
@@ -1020,6 +1038,7 @@ fudge
           return;
         }
 
+        clearChallengeTimers();
         setupPanel.classList.add('hidden');
         toggleListBtn.textContent = 'Show list';
         toggleListBtn.setAttribute('aria-label', 'Show spelling list');
@@ -1032,6 +1051,7 @@ fudge
         state.next = createPiece();
         state.running = true;
         state.challengeActive = false;
+        state.currentSpelling = '';
         clearHintDisplay();
         spellModal.classList.add('hidden');
         statusEl.textContent = 'Game in progress';
@@ -1039,12 +1059,12 @@ fudge
         spawnPiece();
         drawBoard();
         restartTimer();
-        startSpellingChallenge();
       }
 
       function endGame() {
         state.running = false;
         state.challengeActive = false;
+        clearChallengeTimers();
         if (state.dropTimer) clearInterval(state.dropTimer);
         statusEl.textContent = `Game over! Final score: ${state.score}`;
       }
