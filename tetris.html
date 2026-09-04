@@ -817,7 +817,11 @@ fudge
         if ('speechSynthesis' in window && window.speechSynthesis.resume) {
           window.speechSynthesis.resume();
         }
-        speakWord(state.currentSpelling);
+        window.setTimeout(() => {
+          if (state.currentSpelling) {
+            speakWord(state.currentSpelling);
+          }
+        }, 180);
       }
 
       function startSpellingChallenge() {
@@ -840,7 +844,11 @@ fudge
         clearHintDisplay();
         updateChallengeImage(state.currentSpelling);
         spellModal.classList.remove('hidden');
-        triggerChallengeAudio();
+        window.setTimeout(() => {
+          if (state.challengeActive && state.currentSpelling) {
+            triggerChallengeAudio();
+          }
+        }, 120);
       }
 
       function completeSpellingChallenge() {
