@@ -480,6 +480,13 @@
       function speakWord(word) {
         if (!word || !('speechSynthesis' in window) || !hasUserInteracted) return;
 
+        let playbackStarted = false;
+        const showBlockedMessage = () => {
+          if (!playbackStarted) {
+            setStatus('Audio is blocked by the browser or device settings — use the picture clue instead.', 'error');
+          }
+        };
+
         const playSpeech = () => {
           try {
             window.speechSynthesis.cancel();
@@ -487,8 +494,18 @@
             utterance.lang = 'en-GB';
             utterance.rate = 0.9;
             utterance.pitch = 1.1;
+
+            utterance.onstart = () => {
+              playbackStarted = true;
+              setStatus('');
+            };
+
+            utterance.onend = () => {
+              setStatus('');
+            };
+
             utterance.onerror = () => {
-              setStatus('Audio is blocked by the browser or device settings — use the picture clue instead.', 'error');
+              showBlockedMessage();
             };
 
             const voices = window.speechSynthesis.getVoices();
@@ -504,24 +521,26 @@
             window.speechSynthesis.speak(utterance);
           } catch (error) {
             console.warn('Speech playback failed:', error);
-            setStatus('Audio is blocked by the browser or device settings — use the picture clue instead.', 'error');
+            showBlockedMessage();
           }
         };
 
         if (window.speechSynthesis.getVoices().length === 0) {
+          let fallbackTimer = null;
           const voiceListener = () => {
             window.speechSynthesis.onvoiceschanged = null;
+            if (fallbackTimer) clearTimeout(fallbackTimer);
             playSpeech();
           };
 
           window.speechSynthesis.onvoiceschanged = voiceListener;
-          setTimeout(() => {
+          fallbackTimer = setTimeout(() => {
             if (!window.speechSynthesis || !window.speechSynthesis.getVoices || !window.speechSynthesis.getVoices().length) {
-              setStatus('Audio is blocked by the browser or device settings — use the picture clue instead.', 'error');
+              showBlockedMessage();
             } else {
               playSpeech();
             }
-          }, 250);
+          }, 1200);
           return;
         }
 

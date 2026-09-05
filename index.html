@@ -464,6 +464,14 @@
               <p>Memorise the word, then drag the jumbled letters into place.</p>
             </div>
           </a>
+
+          <a class="game-card centre-row" href="rwi-letters.html" aria-label="Open Phonics and Number Match">
+            <div class="game-icon" aria-hidden="true">🔤</div>
+            <div class="game-copy">
+              <h2>Phonics &amp; Number Match</h2>
+              <p>Match the picture to the correct phonic letter and solve simple number challenges.</p>
+            </div>
+          </a>
         </div>
       </div>
     </main>
@@ -558,6 +566,10 @@
         transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
       }
 
+      .game-card.centre-row {
+        grid-column: 2;
+      }
+
       .game-card:hover,
       .game-card:focus-visible {
         transform: translateY(-2px);
@@ -600,6 +612,10 @@
       @media (max-width: 960px) {
         .game-options {
           grid-template-columns: repeat(2, minmax(220px, 1fr));
+        }
+
+        .game-card.centre-row {
+          grid-column: auto;
         }
       }
 

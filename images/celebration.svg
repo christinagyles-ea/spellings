@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" role="img" aria-labelledby="title desc">
+  <title id="title">Celebration</title>
+  <desc id="desc">A bright celebratory badge with confetti and stars.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="100%" stop-color="#fde68a"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="220" rx="24" fill="url(#bg)"/>
+  <g fill="#fbbf24" opacity="0.9">
+    <circle cx="44" cy="48" r="6"/>
+    <circle cx="76" cy="28" r="5"/>
+    <circle cx="270" cy="58" r="7"/>
+    <circle cx="286" cy="36" r="5"/>
+    <circle cx="238" cy="28" r="6"/>
+  </g>
+  <g>
+    <path d="M160 40 L170 68 L198 68 L174 86 L184 114 L160 96 L136 114 L146 86 L122 68 L150 68 Z" fill="#f97316" opacity="0.9"/>
+    <path d="M111 92 L117 110 L135 110 L120 122 L126 140 L111 129 L96 140 L102 122 L87 110 L105 110 Z" fill="#facc15"/>
+    <path d="M209 90 L215 108 L233 108 L218 120 L224 138 L209 127 L194 138 L200 120 L185 108 L203 108 Z" fill="#facc15"/>
+  </g>
+  <g>
+    <rect x="75" y="125" width="22" height="52" rx="8" fill="#f43f5e" transform="rotate(-18 86 152)"/>
+    <rect x="104" y="118" width="22" height="60" rx="8" fill="#60a5fa" transform="rotate(14 115 148)"/>
+    <rect x="136" y="110" width="22" height="68" rx="8" fill="#a78bfa" transform="rotate(-10 147 146)"/>
+    <rect x="166" y="116" width="22" height="62" rx="8" fill="#34d399" transform="rotate(18 177 147)"/>
+    <rect x="196" y="126" width="22" height="52" rx="8" fill="#f59e0b" transform="rotate(-12 207 152)"/>
+    <rect x="224" y="118" width="22" height="60" rx="8" fill="#fb7185" transform="rotate(14 235 148)"/>
+  </g>
+  <g>
+    <circle cx="160" cy="69" r="28" fill="url(#badge)"/>
+    <path d="M148 70 L156 78 L173 61" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

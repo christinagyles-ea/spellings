@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Drag the Letters</title>
+    <title>RWI Letter Match</title>
     <style>
       :root {
         --bg: #101828;
@@ -31,7 +31,7 @@
         background-color: #101828;
         background: radial-gradient(circle at top, #1e293b, var(--bg) 65%);
         color: var(--text);
-        font-family: Arial, Helvetica, sans-serif;
+        font-family: "Sassoon Sans", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
       }
 
       .game-shell {
@@ -73,6 +73,7 @@
         border-radius: 12px;
         background: linear-gradient(135deg, #d97706, #b45309);
         color: white;
+        font-family: "Sassoon Sans", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
         font-size: 1.2rem;
         font-weight: 700;
         padding: 0.9rem 1rem;
@@ -189,6 +190,13 @@
         color: #f8fafc;
       }
 
+      .word-flash.equation {
+        white-space: normal;
+        text-align: center;
+        letter-spacing: 0.06em;
+        text-transform: none;
+      }
+
       .word-flash.fade-out {
         opacity: 0;
         transform: scale(0.96);
@@ -211,6 +219,7 @@
         border: 2px dashed rgba(148, 163, 184, 0.5);
         background: rgba(15, 23, 42, 0.7);
         color: var(--text);
+        font-family: "Sassoon Sans", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
         font-size: 2rem;
         font-weight: 900;
         text-transform: lowercase;
@@ -245,6 +254,7 @@
         border-radius: 14px;
         background: linear-gradient(135deg, var(--accent), #1d4f94);
         color: #fff;
+        font-family: "Sassoon Sans", "Comic Sans MS", "Trebuchet MS", sans-serif;
         font-size: 2rem;
         font-weight: 900;
         cursor: grab;
@@ -264,8 +274,10 @@
         min-height: 1.8rem;
         text-align: center;
         color: var(--muted);
+        font-family: "Sassoon Sans", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
         font-size: 1.4rem;
         font-weight: 800;
+        letter-spacing: 0.02em;
       }
 
       .status.success {
@@ -274,6 +286,47 @@
 
       .status.error {
         color: #fca5a5;
+      }
+
+      .celebration-screen {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 1rem;
+        min-height: 420px;
+        padding: 2rem 1rem;
+      }
+
+      .celebration-screen.visible {
+        display: flex;
+      }
+
+      .celebration-image {
+        width: min(100%, 260px);
+        height: auto;
+        filter: drop-shadow(0 16px 26px rgba(16, 24, 40, 0.38));
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 22px;
+      }
+
+      .play-again-btn {
+        appearance: none;
+        border: none;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        font-size: 1.25rem;
+        font-weight: 800;
+        padding: 1rem 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 10px 25px rgba(34, 197, 94, 0.28);
+      }
+
+      .play-again-btn:hover,
+      .play-again-btn:focus-visible {
+        filter: brightness(1.05);
       }
 
       @media (max-width: 720px) {
@@ -301,7 +354,7 @@
         <button class="back-button" type="button" onclick="window.location.href='index.html'" aria-label="Go back to the game chooser">← Back</button>
       </div>
 
-      <h1>Drag the letters</h1>
+      <h1>RWI Letter Match</h1>
 
       <div class="hud">
         <div>Score: <strong id="score">0</strong></div>
@@ -315,33 +368,40 @@
         </div>
       </div>
 
-      <div class="play-area">
-        <div class="panel image-frame">
-          <img id="word-image" src="images/badge.jpeg" alt="Word clue" />
-        </div>
+      <div id="game-content">
+        <div class="play-area">
+          <div class="panel image-frame">
+            <img id="word-image" src="images/RWI-spelling/A.jpg" alt="Letter clue" />
+          </div>
 
-        <div class="panel word-stage">
-          <button id="listen-btn" type="button" class="secondary-btn" aria-label="Listen to the word">🔊 Listen</button>
-          <button id="hint-btn" type="button" aria-label="Reveal a quick hint">💡 Hint</button>
-          <div id="word-flash" class="word-flash" aria-live="polite">badge</div>
-          <div id="word-slots" class="word-slots" aria-live="polite"></div>
-          <div id="letter-bank" class="letter-bank" aria-live="polite"></div>
-          <div id="status" class="status" aria-live="polite"></div>
+          <div class="panel word-stage">
+            <button id="listen-btn" type="button" class="secondary-btn" aria-label="Listen to the letter sound">🔊 Listen</button>
+            <button id="hint-btn" type="button" aria-label="Show a hint">💡 Hint</button>
+            <div id="word-flash" class="word-flash" aria-live="polite">a</div>
+            <div id="word-slots" class="word-slots" aria-live="polite"></div>
+            <div id="letter-bank" class="letter-bank" aria-live="polite"></div>
+            <div id="status" class="status" aria-live="polite"></div>
+          </div>
         </div>
+      </div>
+
+      <div id="celebration-screen" class="celebration-screen" aria-live="polite">
+        <img class="celebration-image" src="images/RWI-spelling/celebrate.gif" alt="Celebration" />
+        <h2>Well done!</h2>
+        <p id="celebration-message">You finished all the challenges.</p>
+        <button id="play-again-btn" class="play-again-btn" type="button">Play again</button>
       </div>
     </main>
 
     <script>
-      const words = [
-        { word: 'badge', image: 'images/badge.jpeg' },
-        { word: 'because', image: 'images/because.jpeg' },
-        { word: 'bridge', image: 'images/bridge.jpeg' },
-        { word: 'dodge', image: 'images/dodge.jpeg' },
-        { word: 'door', image: 'images/door.jpeg' },
-        { word: 'edge', image: 'images/edge.jpeg' },
-        { word: 'floor', image: 'images/floor.jpeg' },
-        { word: 'fudge', image: 'images/fudge.jpeg' },
-        { word: 'poor', image: 'images/poor.jpeg' }
+      const challengeRounds = [
+        { type: 'letter', letter: 'a', image: 'images/RWI-spelling/A.jpg' },
+        { type: 'letter', letter: 'm', image: 'images/RWI-spelling/M.png' },
+        { type: 'letter', letter: 's', image: 'images/RWI-spelling/S.png' },
+        { type: 'number', prompt: '2 + 1 = ?', answer: '3', choices: ['1', '2', '3', '4'] },
+        { type: 'number', prompt: '3 + 2 = ?', answer: '5', choices: ['4', '5', '6', '7'] },
+        { type: 'number', prompt: '5 + 2 = ?', answer: '7', choices: ['6', '7', '8', '9'] },
+        { type: 'number', prompt: '4 + 1 = ?', answer: '5', choices: ['3', '4', '5', '6'] }
       ];
 
       const scoreEl = document.getElementById('score');
@@ -353,20 +413,20 @@
       const wordSlots = document.getElementById('word-slots');
       const letterBank = document.getElementById('letter-bank');
       const statusEl = document.getElementById('status');
-
       const listenBtn = document.getElementById('listen-btn');
       const hintBtn = document.getElementById('hint-btn');
+      const gameContent = document.getElementById('game-content');
+      const celebrationScreen = document.getElementById('celebration-screen');
+      const celebrationMessage = document.getElementById('celebration-message');
+      const playAgainBtn = document.getElementById('play-again-btn');
 
-      let gameWords = [];
-      let currentWord = null;
-      let currentIndex = 0;
+      let roundIndex = 0;
       let score = 0;
       let elapsedSeconds = 0;
       let timerId = null;
       let startTimestamp = 0;
       let draggedLetter = null;
       let draggedLetterId = null;
-      let placedCount = 0;
       let hasUserInteracted = false;
 
       function shuffleArray(array) {
@@ -384,26 +444,26 @@
         return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
       }
 
-      function updateHud() {
-        scoreEl.textContent = String(score);
-        roundEl.textContent = String(Math.min(currentIndex + 1, gameWords.length || 1));
-        timerEl.textContent = formatTime(elapsedSeconds);
-        const progress = gameWords.length ? ((currentIndex + 1) / gameWords.length) * 100 : 0;
-        progressFill.style.width = `${progress}%`;
-      }
-
       function setStatus(message, type = '') {
         statusEl.textContent = message;
         statusEl.classList.remove('success', 'error');
         if (type) statusEl.classList.add(type);
       }
 
+      function updateHud() {
+        scoreEl.textContent = String(score);
+        roundEl.textContent = String(Math.min(roundIndex + 1, challengeRounds.length));
+        timerEl.textContent = formatTime(elapsedSeconds);
+        const progress = challengeRounds.length ? ((roundIndex + 1) / challengeRounds.length) * 100 : 0;
+        progressFill.style.width = `${progress}%`;
+      }
+
       function markUserInteraction() {
         hasUserInteracted = true;
       }
 
-      function speakWord(word) {
-        if (!word || !('speechSynthesis' in window) || !hasUserInteracted) return;
+      function speakLetter(letter) {
+        if (!letter || !('speechSynthesis' in window) || !hasUserInteracted) return;
 
         let playbackStarted = false;
         const showBlockedMessage = () => {
@@ -415,7 +475,7 @@
         const playSpeech = () => {
           try {
             window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(word);
+            const utterance = new SpeechSynthesisUtterance(letter);
             utterance.lang = 'en-GB';
             utterance.rate = 0.9;
             utterance.pitch = 1.1;
@@ -472,42 +532,6 @@
         playSpeech();
       }
 
-      function revealHint() {
-        if (!currentWord || !wordSlots.children.length) return;
-
-        markUserInteraction();
-        const slots = Array.from(wordSlots.children);
-        const currentStates = slots.map((slot) => ({
-          text: slot.textContent.trim(),
-          filled: slot.classList.contains('filled')
-        }));
-
-        elapsedSeconds += 5;
-        startTimestamp -= 5000;
-        timerEl.textContent = formatTime(elapsedSeconds);
-
-        slots.forEach((slot, index) => {
-          slot.classList.remove('filled');
-          slot.textContent = currentWord.word[index];
-        });
-
-        setStatus('Hint! 5 seconds added.', '');
-
-        setTimeout(() => {
-          slots.forEach((slot, index) => {
-            const state = currentStates[index];
-            if (state.filled) {
-              slot.textContent = state.text;
-              slot.classList.add('filled');
-            } else {
-              slot.textContent = '';
-              slot.classList.remove('filled');
-            }
-          });
-          setStatus('Drag the letters into place.', '');
-        }, 900);
-      }
-
       function startTimer() {
         if (timerId) clearInterval(timerId);
         startTimestamp = Date.now() - elapsedSeconds * 1000;
@@ -524,141 +548,239 @@
         }
       }
 
-      function clearSlots() {
+      function renderRound() {
+        const currentRound = challengeRounds[roundIndex];
+        if (!currentRound) {
+          endGame();
+          return;
+        }
+
         wordSlots.innerHTML = '';
         letterBank.innerHTML = '';
-      }
+        wordFlash.classList.remove('fade-out', 'equation');
+        wordFlash.textContent = '';
+        wordImage.style.display = 'block';
 
-      function renderWordSlots() {
-        clearSlots();
-        for (let i = 0; i < currentWord.word.length; i += 1) {
+        if (currentRound.type === 'letter') {
+          wordImage.src = currentRound.image;
+          wordImage.alt = `${currentRound.letter} picture`;
+          wordFlash.textContent = '';
+          wordFlash.style.textTransform = 'lowercase';
+          setStatus('Drag the matching letter into the space.', '');
+
           const slot = document.createElement('div');
           slot.className = 'slot';
-          slot.dataset.index = String(i);
-          slot.setAttribute('aria-label', `Letter slot ${i + 1}`);
+          slot.setAttribute('aria-label', 'Letter slot');
           slot.addEventListener('dragover', (event) => event.preventDefault());
           slot.addEventListener('drop', (event) => {
             event.preventDefault();
             if (!draggedLetter || !draggedLetterId) return;
 
             markUserInteraction();
-            const expected = currentWord.word[i];
-            const tile = document.querySelector(`.letter-tile[data-id="${draggedLetterId}"]`);
-            if (!tile) return;
+            const placedLetter = draggedLetter.toLowerCase();
+            const correctLetter = currentRound.letter.toLowerCase();
 
-            const placedLetter = tile.dataset.letter;
-            if (placedLetter !== expected) {
-              slot.classList.add('wrong');
-              setTimeout(() => slot.classList.remove('wrong'), 300);
-              return;
-            }
-
-            tile.classList.add('hidden');
-            slot.textContent = placedLetter;
-            slot.classList.add('filled');
-            placedCount += 1;
-            draggedLetter = null;
-            draggedLetterId = null;
-
-            if (placedCount === currentWord.word.length) {
+            if (placedLetter === correctLetter) {
+              slot.textContent = placedLetter;
+              slot.classList.add('filled');
+              setStatus('Correct! Great matching.', 'success');
               score += 1;
               updateHud();
-              setStatus('Well done! Great spelling.', 'success');
+
+              const tile = document.querySelector(`.letter-tile[data-id="${draggedLetterId}"]`);
+              if (tile) tile.classList.add('hidden');
+
+              draggedLetter = null;
+              draggedLetterId = null;
+
               setTimeout(() => {
-                currentIndex += 1;
-                if (currentIndex >= gameWords.length) {
+                roundIndex += 1;
+                if (roundIndex >= challengeRounds.length) {
                   endGame();
                 } else {
-                  showNextWord();
+                  renderRound();
                 }
-              }, 900);
+              }, 800);
+            } else {
+              slot.classList.add('wrong');
+              setTimeout(() => slot.classList.remove('wrong'), 350);
+              setStatus('Try again!', 'error');
             }
           });
           wordSlots.appendChild(slot);
-        }
-      }
 
-      function renderLetterBank() {
-        const letters = shuffleArray(currentWord.word.split('')); 
-        letters.forEach((letter, index) => {
-          const tile = document.createElement('button');
-          tile.type = 'button';
-          tile.className = 'letter-tile';
-          tile.draggable = true;
-          tile.textContent = letter;
-          tile.dataset.letter = letter;
-          tile.dataset.id = `letter-${currentIndex}-${index}-${Math.random().toString(16).slice(2)}`;
-          tile.addEventListener('dragstart', (event) => {
+          shuffleArray(['a', 'm', 's']).forEach((letter) => {
+            const tile = document.createElement('button');
+            tile.type = 'button';
+            tile.className = 'letter-tile';
+            tile.draggable = true;
+            tile.textContent = letter;
+            tile.dataset.letter = letter;
+            tile.dataset.id = `${currentRound.letter}-${Math.random().toString(16).slice(2)}`;
+
+            tile.addEventListener('dragstart', (event) => {
+              markUserInteraction();
+              draggedLetter = letter;
+              draggedLetterId = tile.dataset.id;
+              event.dataTransfer.setData('text/plain', letter);
+            });
+
+            tile.addEventListener('dragend', () => {
+              draggedLetter = null;
+              draggedLetterId = null;
+            });
+
+            letterBank.appendChild(tile);
+          });
+        } else {
+          wordImage.style.display = 'none';
+          wordFlash.textContent = currentRound.prompt;
+          wordFlash.classList.add('equation');
+          wordFlash.style.textTransform = 'none';
+          wordFlash.classList.remove('fade-out');
+          setStatus('Drag the correct number into the space.', '');
+
+          const slot = document.createElement('div');
+          slot.className = 'slot';
+          slot.textContent = '?';
+          slot.setAttribute('aria-label', 'Number slot');
+          slot.addEventListener('dragover', (event) => event.preventDefault());
+          slot.addEventListener('drop', (event) => {
+            event.preventDefault();
+            if (!draggedLetter || !draggedLetterId) return;
+
             markUserInteraction();
-            draggedLetter = letter;
-            draggedLetterId = tile.dataset.id;
-            event.dataTransfer.setData('text/plain', letter);
-          });
-          tile.addEventListener('dragend', () => {
-            draggedLetter = null;
-            draggedLetterId = null;
-          });
-          letterBank.appendChild(tile);
-        });
-      }
+            const placedValue = String(draggedLetter).trim();
+            const correctValue = String(currentRound.answer);
 
-      function showNextWord() {
-        if (currentIndex >= gameWords.length) {
-          endGame();
-          return;
+            if (placedValue === correctValue) {
+              slot.textContent = placedValue;
+              slot.classList.add('filled');
+              setStatus('Correct! Great counting.', 'success');
+              score += 1;
+              updateHud();
+
+              const tile = document.querySelector(`.letter-tile[data-id="${draggedLetterId}"]`);
+              if (tile) tile.classList.add('hidden');
+
+              draggedLetter = null;
+              draggedLetterId = null;
+
+              setTimeout(() => {
+                roundIndex += 1;
+                if (roundIndex >= challengeRounds.length) {
+                  endGame();
+                } else {
+                  renderRound();
+                }
+              }, 800);
+            } else {
+              slot.classList.add('wrong');
+              setTimeout(() => slot.classList.remove('wrong'), 350);
+              setStatus('Try again!', 'error');
+            }
+          });
+          wordSlots.appendChild(slot);
+
+          shuffleArray(currentRound.choices).forEach((option) => {
+            const tile = document.createElement('button');
+            tile.type = 'button';
+            tile.className = 'letter-tile';
+            tile.draggable = true;
+            tile.textContent = option;
+            tile.dataset.letter = option;
+            tile.dataset.id = `number-${currentRound.prompt}-${Math.random().toString(16).slice(2)}`;
+
+            tile.addEventListener('dragstart', (event) => {
+              markUserInteraction();
+              draggedLetter = option;
+              draggedLetterId = tile.dataset.id;
+              event.dataTransfer.setData('text/plain', option);
+            });
+
+            tile.addEventListener('dragend', () => {
+              draggedLetter = null;
+              draggedLetterId = null;
+            });
+
+            letterBank.appendChild(tile);
+          });
         }
 
-        currentWord = gameWords[currentIndex];
-        placedCount = 0;
-        wordImage.src = currentWord.image;
-        wordImage.alt = currentWord.word;
-        wordFlash.textContent = currentWord.word;
-        wordFlash.classList.remove('fade-out');
-        wordSlots.innerHTML = '';
-        letterBank.innerHTML = '';
-        setStatus('Memorise the word, then build it.', '');
         updateHud();
+      }
 
-        setTimeout(() => {
-          wordFlash.classList.add('fade-out');
-        }, 1200);
+      function revealHint() {
+        const currentRound = challengeRounds[roundIndex];
+        if (!currentRound) return;
 
-        setTimeout(() => {
-          renderWordSlots();
-          renderLetterBank();
-          setStatus('Drag the letters into place.', '');
-          speakWord(currentWord.word);
-        }, 1750);
+        markUserInteraction();
+
+        if (currentRound.type === 'letter') {
+          const correctTile = [...document.querySelectorAll('.letter-tile')].find((tile) => tile.dataset.letter === currentRound.letter);
+          if (correctTile) {
+            correctTile.style.outline = '4px solid #fbbf24';
+            correctTile.style.outlineOffset = '3px';
+            setTimeout(() => {
+              correctTile.style.outline = '';
+              correctTile.style.outlineOffset = '';
+            }, 1100);
+          }
+          setStatus(`Hint: match the ${currentRound.letter.toLowerCase()} picture.`, '');
+        } else {
+          const correctTile = [...document.querySelectorAll('.letter-tile')].find((tile) => tile.dataset.letter === currentRound.answer);
+          if (correctTile) {
+            correctTile.style.outline = '4px solid #fbbf24';
+            correctTile.style.outlineOffset = '3px';
+            setTimeout(() => {
+              correctTile.style.outline = '';
+              correctTile.style.outlineOffset = '';
+            }, 1100);
+          }
+          setStatus(`Hint: the answer is ${currentRound.answer}.`, '');
+        }
       }
 
       function endGame() {
         stopTimer();
+        gameContent.style.display = 'none';
+        celebrationScreen.classList.add('visible');
+        celebrationMessage.textContent = `You matched ${score} out of ${challengeRounds.length} challenges in ${formatTime(elapsedSeconds)}. Great work!`;
         wordFlash.textContent = 'Finished!';
-        wordFlash.classList.remove('fade-out');
+        wordFlash.classList.remove('fade-out', 'equation');
+        wordFlash.style.textTransform = 'none';
+        wordImage.style.display = 'none';
         wordSlots.innerHTML = '';
         letterBank.innerHTML = '';
-        setStatus(`You finished in ${formatTime(elapsedSeconds)}. Great effort!`, 'success');
+        setStatus(`You matched ${score} out of ${challengeRounds.length} challenges. Great work!`, 'success');
       }
 
       listenBtn.addEventListener('click', () => {
         markUserInteraction();
-        if (currentWord) {
-          speakWord(currentWord.word);
+        const currentRound = challengeRounds[roundIndex];
+        if (currentRound && currentRound.type === 'letter') {
+          speakLetter(currentRound.letter);
         }
       });
 
-      hintBtn.addEventListener('click', () => {
-        revealHint();
+      hintBtn.addEventListener('click', revealHint);
+      playAgainBtn.addEventListener('click', () => {
+        celebrationScreen.classList.remove('visible');
+        gameContent.style.display = 'block';
+        startGame();
       });
 
       function startGame() {
-        gameWords = shuffleArray(words);
-        currentIndex = 0;
+        roundIndex = 0;
         score = 0;
         elapsedSeconds = 0;
+        setStatus('');
+        wordFlash.classList.remove('fade-out', 'equation');
+        wordFlash.style.textTransform = 'none';
+        wordImage.style.display = 'block';
         updateHud();
         startTimer();
-        showNextWord();
+        renderRound();
       }
 
       startGame();
